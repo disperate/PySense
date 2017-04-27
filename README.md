@@ -1,8 +1,6 @@
 # PySense
 PySense – Web Based Sensor Analysis
 
-## Prerequisite
-Install mongodb 3.2+
 ## Install Dependencies
 ```python
 pip install –r requirements.txt
@@ -17,6 +15,7 @@ log.logUltraSonic("SensorLeft", 3.2)
 log.logUltraSonic("SensorRight",1.6)
 log.logNotice("LoggerTest", "message")
 
+# coming soon
 log.img(cv_img_array, "message")
 log.stream(cv_img_array)
 ```
