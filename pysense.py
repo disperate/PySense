@@ -61,4 +61,4 @@ api.add_resource(Trip, "/api/trips", endpoint="trips")
 api.add_resource(Trip, "/api/trips/<string:trip_id>", endpoint="id")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
