@@ -2,7 +2,7 @@ function renderTrip(item, index, arr) {
 
     var startDate = new moment(item.startDate.$date);
     var endDate = new moment(item.endDate.$date);
-    var id = item._id.$oid;
+    var id = item.id;
     var messurmentCount = item.measurementCount;
 
     $("#tripList").append(
@@ -50,7 +50,7 @@ function renderLog(item, index, arr) {
 
 function loadTrips() {
     $.getJSON("/api/trips", function (data) {
-        data[0].forEach(renderTrip);
+        data.forEach(renderTrip);
     })
 };
 
@@ -61,7 +61,7 @@ var chartDataLabels = [];
 
 function loadTrip(id) {
     $.getJSON("/api/trips/" + id, function (data) {
-        data[0].forEach(renderLog);
+        data.forEach(renderLog);
 
         // plot chart from chartData
         //let dataa = MG.convert.date(chartData, 'date');

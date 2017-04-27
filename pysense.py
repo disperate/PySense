@@ -33,13 +33,16 @@ class Trip(Resource):
                     triplogs.append(logs.get(eid=int(log_id)))
 
                 trip['logs'] = triplogs
-                data.append(trip)
+                return trip
             else:
-                data.append("no trip found for {}".format(trip_id))
+               return "no trip found for {}".format(trip_id)
         else:
-            data.append(trips.all())
-
-        return data
+            data = []
+            for trip in trips.all():
+                trip['id'] = trip.eid
+                trip['measurementCount'] = len(trip['logs'])
+                data.append(trip)
+            return data
 
 
 @app.route("/")
