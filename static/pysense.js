@@ -13,26 +13,26 @@ function renderTrip(item, index, arr) {
 }
 
 
-function renderLog(item, index, arr) {
+function renderLog(item) {
 
     var startDate = new moment(item.startDate.$date);
     var endDate = new moment(item.endDate.$date);
-    var id = item._id.$oid;
-    var logs = item.logData;
+    var id = item.id;
+    var logs = item.logs;
 
     logs.forEach(function (item, index, arr) {
-        var date = new moment(item.date.$date);
+        var datestamp = new Date(item.timestamp * 1000);
 
         if (item.sensor.type == "ULTRA_SONIC") {
             if (item.sensor.name == "SensorLeft") {
                 chartDataS1.push({
-                    date: item.date.$date,
+                    date: datestamp,
                     type: item.sensor.type,
                     value: item.value
                 });
             } else {
                 chartDataS2.push({
-                    date: item.date.$date,
+                    date: datestamp,
                     type: item.sensor.type,
                     value: item.value
                 });
@@ -41,7 +41,7 @@ function renderLog(item, index, arr) {
 
         if (item.sensor.type == "TEXT") {
             chartDataLabels.push({
-                'date': item.date.$date,
+                'date': datestamp,
                 'label': item.value
             })
         }
@@ -61,7 +61,7 @@ var chartDataLabels = [];
 
 function loadTrip(id) {
     $.getJSON("/api/trips/" + id, function (data) {
-        data.forEach(renderLog);
+        renderLog(data);
 
         // plot chart from chartData
         //let dataa = MG.convert.date(chartData, 'date');
