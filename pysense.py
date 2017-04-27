@@ -1,23 +1,23 @@
 from flask import Flask, jsonify, url_for, redirect, request, render_template, send_from_directory
-from flask_pymongo import PyMongo
 from flask_restful import Api, Resource
-from bson import json_util, ObjectId
 import json
+from tinydb import TinyDB, Query
+
+db = TinyDB('db.json')
+logs = db.table('logs')
+trips = db.table('trips')
 
 app = Flask(__name__, static_folder="static")
-app.config["MONGO_DBNAME"] = "pysense"
-mongo = PyMongo(app, config_prefix='MONGO')
 APP_URL = "http://127.0.0.1:5000"
-
 
 class Log(Resource):
     def get(self):
         data = []
-        cursor = mongo.db.log.find()
+        cursor = logs.all()
         for log in cursor:
             data.append(log)
 
-        return json.loads(json_util.dumps({"response": data}))
+        return {"response": data}
 
 
 class Trip(Resource):
@@ -25,34 +25,21 @@ class Trip(Resource):
         data = []
 
         if trip_id:
+            trip = trips.get(eid=int(trip_id))
 
-            trip = mongo.db.trip.aggregate(
-                [
-                    {"$match": {"_id": ObjectId(trip_id)}},
-                    { "$unwind": "$logs" },
-                    {"$lookup": {"from": "log", "localField": "logs", "foreignField": "_id", "as": "logData"}},
-                    {"$project":
-                        {
-                            "_id": 1,
-                            "startDate": 1,
-                            "endDate": 1,
-                            "logData": 1
-                        }
-                    }
-
-                ])
             if trip:
+                triplogs = []
+                for log_id in trip['logs']:
+                    triplogs.append(logs.get(eid=int(log_id)))
+
+                trip['logs'] = triplogs
                 data.append(trip)
             else:
                 data.append("no trip found for {}".format(trip_id))
         else:
-            trip = mongo.db.trip.aggregate(
-                [
-                    {"$project": {"_id": 1, "startDate": 1, "endDate": 1, "measurementCount": {"$size": "$logs"}}}
-                ])
-            data.append(trip)
+            data.append(trips.all())
 
-        return json.loads(json_util.dumps(data))
+        return data
 
 
 @app.route("/")
