@@ -1,25 +1,25 @@
-from pymongo import MongoClient
-import datetime
+from tinydb import TinyDB, Query, where
+import time
 
 MAX_TRIP_AGE_SECONDS = 10
 
-client = MongoClient()
-db = client.pysense
-
+db = TinyDB('db.json')
+logs = db.table('logs')
+trips = db.table('trips')
 
 def logUltraSonic(sensorname, value):
     SENSOR_TYPE = "ULTRA_SONIC"
 
-    logID = db.log.insert_one(
+    logID = logs.insert(
         {
             "value": value,
-            "date": datetime.datetime.utcnow(),
+            "timestamp": time.time(),
             "sensor": {
                 "name": sensorname,
                 "type": SENSOR_TYPE
             }
         }
-    ).inserted_id
+    )
 
     addLogIdToTrip(logID)
 
@@ -27,43 +27,38 @@ def logUltraSonic(sensorname, value):
 def logNotice(sender, text):
     SENSOR_TYPE = "TEXT"
 
-    logID = db.log.insert_one(
+    logID = logs.insert(
         {
             "value": text,
-            "date": datetime.datetime.utcnow(),
+            "timestamp": time.time(),
             "sensor": {
                 "name": sender,
                 "type": SENSOR_TYPE
             }
         }
-    ).inserted_id
+    )
 
     addLogIdToTrip(logID)
 
 
 def addLogIdToTrip(logID):
-
-    filterDate = getMaxTripAgeTime()
-
-    trip = db.trip.find_one({"endDate": {"$gt": filterDate}})
+    result = trips.search(where('endDate') > time.time()-MAX_TRIP_AGE_SECONDS)
+    trip = result[0] if result else None
 
     if trip is not None:
-        db.trip.update({'_id': trip['_id']}, {
-            '$addToSet': {'logs': logID},
-            '$set': {"endDate": datetime.datetime.utcnow()}
-        })
+        tmplogs = trips.get(eid=trip.eid)['logs']
+        tmplogs.append(logID)
+        trips.update({
+            'logs': tmplogs,
+            'endDate': time.time()
+        }, eids=[trip.eid])
     else:
-        db.trip.insert_one(
+        trips.insert(
             {
-                "startDate": datetime.datetime.utcnow(),
-                "endDate": datetime.datetime.utcnow(),
+                "startDate": time.time(),
+                "endDate": time.time(),
                 "logs": [
                     logID
                 ]
             }
         )
-
-
-def getMaxTripAgeTime():
-    dateNow = datetime.datetime.utcnow()
-    return dateNow + datetime.timedelta(seconds=-MAX_TRIP_AGE_SECONDS)

@@ -11,13 +11,15 @@ pip install –r requirements.txt
 ## Usage
 Log data with these commands:
 ```python 
-import pySenseLogger
+import pySenseLogger as log
 
-pySenseLogger.logUltraSonic("SensorLeft", 3.2)
-pySenseLogger.logUltraSonic("SensorRight",1.6)
-pySenseLogger.logNotice("LoggerTest", "message")
+log.logUltraSonic("SensorLeft", 3.2)
+log.logUltraSonic("SensorRight",1.6)
+log.logNotice("LoggerTest", "message")
+
+log.img(cv_img_array, "message")
+log.stream(cv_img_array)
 ```
-The first value of the log function is the sensor name. It may be chosen freely.
 
 To analyse the logs, start the server:
 ```python 

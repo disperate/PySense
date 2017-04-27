@@ -14,7 +14,7 @@ def logDataSets(count):
         if x % 10 == 0:
             pySenseLogger.logNotice("LoggerTest", "Sent 10 logs")
 
-        
+        time.sleep(0.1)        
 
 def getRandomChange():
     return random.random() - 0.5
